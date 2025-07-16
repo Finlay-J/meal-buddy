@@ -1,6 +1,6 @@
 import streamlit as st
-#from utils.image_utils import classify_ingredients
-#from utils.recipe_utils import generate_recipe, get_nutrition_info
+from utils.image_utils import classify_ingredients
+from utils.recipe_utils import generate_recipe, get_nutrition_info, generation_function
 
 
 
@@ -71,25 +71,40 @@ with tab2:
             # For now, we will simulate ingredient detection
             st.write("Ingredients detected:", ingredients)
 
+headline= "INGREDIENTS"
 if ingredients:
     if st.button("Generate Recipe"):
         with st.spinner("Generating recipe..."):
-            # Here we would call the recipe generation function
-            # recipe = generate_recipe(ingredients)
-            # For now, we will simulate recipe generation
+            generated = generation_function(ingredients)
+            if generated:
+                for text in generated:
+                    sections = text.split("\n")
+                    for section in sections:
+                        section = section.strip()
+                        if section.startswith("title:"):
+                            section = section.replace("title:", "")
+                            headline = "TITLE"
+                        elif section.startswith("ingredients:"):
+                            section = section.replace("ingredients:", "")
+                            headline = "INGREDIENTS"
+                        elif section.startswith("directions:"):
+                            section = section.replace("directions:", "")
+                            headline = "DIRECTIONS"
+                        
+                        if headline == "TITLE":
+                            st.write(f"[{headline}]: {section.strip().capitalize()}")
+                        else:
+                            section_info = [f"  - {i+1}: {info.strip().capitalize()}" for i, info in enumerate(section.split("--"))]
+                            st.write(f"[{headline}]:")
+                            st.write("\n".join(section_info))
+                else:
+                    st.write("No recipe generated. Please try again with different ingredients.")
 
-            st.subheader("Generated Recipe")
-            st.write("Recipe for your ingredients:", ", ".join(ingredients))
-            # Simulated nutrition info
-            st.write("Nutrition Information: (Simulated)")
-            st.write("- Calories: 500 kcal")
-            st.write("- Protein: 20g")
-            st.write("- Carbs: 60g")
-            st.write("- Fats: 15g")
-            # nutrition_info = get_nutrition_info(recipe)
-            # st.write(nutrition_info)
+
+    
+    
 
 st.sidebar.header("About")
 st.sidebar.write("Meal Buddy is your personal assistant for meal planning. Upload your ingredients or an image, and let us help you create a delicious recipe!")
-st.sidebar.write("Developed by [Your Name].")
-    
+
+
